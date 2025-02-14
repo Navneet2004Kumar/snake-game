@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: rgb(68, 200, 200);
+            font-family: 'Arial', sans-serif;
+        }
+
+        .game-container {
+            text-align: center;
+            position: relative;
+            display: inline-block;
+        }
+
+        h1 {
+    position: absolute;
+    font-size: 23px;
+    color: rgb(208, 26, 26);
+    font-weight: bold;
+    text-transform: uppercase;
+    
+    top: 50%; 
+    left: 50%; 
+    transform: translate(-50%, -50%);
+}
+
+        canvas {
+            border: 7px solid #222;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            border-radius: 7px;
+            background-color: #3f8fd4;
+        }
+
+        .score {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 18px;
+            color: rgb(208, 39, 39);
+            font-weight: bold;
+            text-shadow: 2px 2px 5px rgba(196, 13, 13, 0.7);
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Snake Game</h1>
+        <canvas id="gameCanvas" width="430" height="430"></canvas>
+        <div class="score" id="scoreDisplay">Score: 0</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const cellSize = 20;
+        let snake = [{x: 160, y: 160}];
+        let food = {x: 120, y: 120};
+        let currentDirection = {x: cellSize, y: 0};
+        let currentScore = 0;
+
+        function updateScoreDisplay() {
+            document.getElementById('scoreDisplay').innerText = 'Score: ' + currentScore;
+        }
+
+        function renderGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            snake.forEach(segment => {
+                ctx.fillStyle = 'black'; 
+                ctx.fillRect(segment.x, segment.y, cellSize, cellSize);
+            });
+
+            ctx.fillStyle = 'black'; 
+            ctx.fillRect(food.x, food.y, cellSize, cellSize);
+
+            updateScoreDisplay();
+        }
+
+        function gameUpdate() {
+            const head = {x: snake[0].x + currentDirection.x, y: snake[0].y + currentDirection.y};
+
+            if (head.x < 0 || head.x >= canvas.width || head.y < 0 || head.y >= canvas.height || 
+                snake.some((segment, index) => index !== 0 && segment.x === head.x && segment.y === head.y)) {
+                return gameEnd();
+            }
+
+            snake.unshift(head);
+
+            if (head.x === food.x && head.y === food.y) {
+                currentScore++;
+                spawnNewFood();
+            } else {
+                snake.pop();
+            }
+
+            renderGame();
+        }
+
+        function handleDirectionChange(event) {
+            switch (event.keyCode) {
+                case 37: 
+                    if (currentDirection.x === 0) currentDirection = {x: -cellSize, y: 0};
+                    break;
+                case 38: 
+                    if (currentDirection.y === 0) currentDirection = {x: 0, y: -cellSize};
+                    break;
+                case 39: 
+                    if (currentDirection.x === 0) currentDirection = {x: cellSize, y: 0};
+                    break;
+                case 40: 
+                    if (currentDirection.y === 0) currentDirection = {x: 0, y: cellSize};
+                    break;
+            }
+        }
+
+        function spawnNewFood() {
+            food = {
+                x: Math.floor(Math.random() * (canvas.width / cellSize)) * cellSize,
+                y: Math.floor(Math.random() * (canvas.height / cellSize)) * cellSize
+            };
+        }
+
+        function gameEnd() {
+            alert('Game Over! Your Score: ' + currentScore);
+            snake = [{x: 160, y: 160}];
+            currentScore = 0;
+            currentDirection = {x: cellSize, y: 0};
+            spawnNewFood();
+        }
+
+        document.addEventListener('keydown', handleDirectionChange);
+
+        function gameLoop() {
+            gameUpdate();
+            setTimeout(gameLoop, 100);
+        }
+
+        spawnNewFood();
+        gameLoop();
+    </script>
+
+</body>
+</html>
